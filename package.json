@@ -22,14 +22,13 @@
     "@babel/node": "^7.4.5",
     "@babel/plugin-transform-runtime": "^7.4.4",
     "@babel/preset-env": "^7.4.5",
-    "coveralls": "^3.0.4",
+    "codecov": "^3.5.0",
     "eslint": "^6.0.1",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.18.0",
     "jest": "^24.8.0",
     "nodemon": "^1.19.1",
     "nyc": "^14.1.1",
-    "superagent": "^5.1.0",
     "supertest": "^4.0.2"
   },
   "engines": {
@@ -40,9 +39,7 @@
     "lint": "eslint src/ --fix",
     "start": "babel-node src/server/index.js",
     "dev": "nodemon --exec babel-node src/server/index.js",
-    "test": "nyc --require @babel/register ---reporter=html --reporter=text jest src/test/**.test.js",
-    "coveralls": "nyc npm test && nyc report --reporter=text-lcov | coveralls",
-    "coverage": "nyc report --reporter=text-lcov | coveralls"
+    "test": "nyc --require @babel/register jest jest --config jestconfig.json src/test/**.test.js"
   },
   "repository": {
     "type": "git",

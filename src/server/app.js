@@ -1,11 +1,10 @@
 import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
-
+import userRoute from '../routes/user.route';
 
 const app = express();
 const API_VERSION = '/api/v1';
-
 app.use(morgan('dev'));
 
 app.use(cors());
@@ -16,6 +15,7 @@ app.use(
     extended: false,
   }),
 );
+app.use(`${API_VERSION}/users`, userRoute);
 app.use('*', (req, res) => {
   res.status(404).json({
     status: 404,

@@ -5,6 +5,10 @@ language: node_js
 node_js:
   - "stable"
 
+env:
+  global:
+    CODECOV_TOKEN="ba7ffd80-ff85-4a5f-9ae6-bd6acede2e74"
+
 cache:
   directories:
     - "node_modules"
@@ -15,8 +19,11 @@ services:
 install:
   - npm install
 
-after_script:
-  - npm run coverage
-  
+script:
+  - npm test
+
+after_success:
+    - bash <(curl -s https://codecov.io/bash)
+
 notification:
   false
