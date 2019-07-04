@@ -15,6 +15,7 @@ const bodyValidation = (req, res, next) => {
   // return the validation middleware
   const route = req.route.path;
   const method = req.method.toLowerCase();
+
   if (supportedMethods.includes(method) && route in Schemas) {
     // get schema for the current route
 
