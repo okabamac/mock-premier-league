@@ -1,0 +1,22 @@
+sudo: false
+
+language: node_js
+
+node_js:
+  - "stable"
+
+cache:
+  directories:
+    - "node_modules"
+
+services:
+  - postgresql
+
+install:
+  - npm install
+
+after_script:
+  - npm run coverage
+  
+notification:
+  false
