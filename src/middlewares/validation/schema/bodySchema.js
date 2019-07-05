@@ -1,10 +1,9 @@
 import Joi from '@hapi/joi';
 
-// const date = Joi.date().required();
+const date = Joi.date();
 
 const name = Joi.string()
-  .regex(/^\D+$/)
-  .required();
+  .regex(/^\D+$/);
 
 const email = Joi.string()
   .email()
@@ -16,13 +15,12 @@ const password = Joi.string()
   .required()
   .strict();
 
-// const id = Joi.string()
-//   .regex(/^\d+$/)
-//   .required();
+const id = Joi.string()
+  .regex(/^\d+$/);
 
 const createUserSchema = Joi.object({
-  first_name: name,
-  last_name: name,
+  first_name: name.required(),
+  last_name: name.required(),
   email,
   password,
   confirm_password: Joi.string()
@@ -33,8 +31,8 @@ const createUserSchema = Joi.object({
 });
 
 const createAdminSchema = Joi.object({
-  first_name: name,
-  last_name: name,
+  first_name: name.required(),
+  last_name: name.required(),
   email,
   password,
   confirm_password: Joi.string()
@@ -50,10 +48,28 @@ const userSigninSchema = Joi.object({
   email,
   password,
 });
+const addTeamSchema = Joi.object({
+  team_name: name.required(),
+  location: name.required(),
+  year_founded: date.required(),
+  current_manager: name.required(),
+  major_trophies: id.required(),
+  motto: name.required(),
+});
+const editTeamSchema = Joi.object({
+  team_name: name,
+  location: name,
+  year_founded: date,
+  current_manager: name,
+  major_trophies: id,
+  motto: name,
+});
 
 
 export default {
   '/admin/signup': createAdminSchema,
   '/regular/signup': createUserSchema,
   '/signin': userSigninSchema,
+  '/add': addTeamSchema,
+  '/edit/:team_id': editTeamSchema,
 };

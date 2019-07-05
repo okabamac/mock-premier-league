@@ -3,7 +3,7 @@ import User from '../models/user.model';
 import GeneralUtils from '../utils/general.utilities';
 import Auth from '../middlewares/auth';
 
-class Userservice {
+class UserService {
   /** Add user to the db
    * @description Operate on a user and his account
    * @param {object} a new user object
@@ -85,4 +85,4 @@ class Userservice {
   }
 }
 
-export default Userservice;
+export default UserService;

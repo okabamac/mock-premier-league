@@ -39,6 +39,23 @@ describe('All user /user', () => {
       expect(response.body.data).toHaveProperty('email');
       expect(response.body.data).toHaveProperty('is_admin');
     });
+    test('It signs in the regular user', async () => {
+      const response = await request(app)
+        .post('/api/v1/users/signin')
+        .send({
+          email: 'nicolekidman@gmail.com',
+          password: 'tomcruise',
+        });
+
+      // Ensure the results returned is correct
+      expect(response.statusCode).toBe(200);
+      expect(response.body.data).toHaveProperty('user_id');
+      expect(response.body.data).toHaveProperty('first_name');
+      expect(response.body.data).toHaveProperty('last_name');
+      expect(response.body.data).toHaveProperty('email');
+      expect(response.body.data).toHaveProperty('is_admin');
+      expect(response.body.data).toHaveProperty('token');
+    });
 
     test('It throws an error because of missing first name', async () => {
       const response = await request(app)
