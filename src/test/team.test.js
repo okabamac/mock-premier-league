@@ -35,6 +35,7 @@ describe('All team management', () => {
           motto: 'Toffee Blues',
           major_trophies: '12',
           location: 'Wigan',
+          stadium: 'Madison Park',
           year_founded: '1826',
           current_manager: 'Roberto Martinez',
         });
@@ -58,6 +59,7 @@ describe('All team management', () => {
           motto: 'Toffee Blues',
           major_trophies: '12',
           location: 'Wigan',
+          stadium: 'Madison Park',
           year_founded: '1826',
           current_manager: 'Roberto Martinez',
         });
@@ -74,6 +76,7 @@ describe('All team management', () => {
           motto: 'Toffee Blues',
           major_trophies: '12',
           location: 'Wigan',
+          stadium: 'Madison Park',
           year_founded: '1826',
           current_manager: 'Roberto Martinez',
         });
@@ -91,6 +94,7 @@ describe('All team management', () => {
           major_trophies: '12',
           location: 'Wigan',
           year_founded: '1826',
+          stadium: 'Madison Park',
           current_manager: 'Roberto Martinez',
         });
       // Ensure the results returned is correct
@@ -106,6 +110,7 @@ describe('All team management', () => {
           team_name: 'Wigan Athletic',
           motto: 'Toffee Blues',
           location: 'Wigan',
+          stadium: 'Madison Park',
           year_founded: '1826',
           current_manager: 'Roberto Martinez',
         });
@@ -123,6 +128,7 @@ describe('All team management', () => {
           motto: 'Toffee Blues',
           major_trophies: '12',
           year_founded: '1826',
+          stadium: 'Madison Park',
           current_manager: 'Roberto Martinez',
         });
       // Ensure the results returned is correct
@@ -138,6 +144,7 @@ describe('All team management', () => {
           motto: 'Toffee Blues',
           major_trophies: '12',
           location: 'Wigan',
+          stadium: 'Madison Park',
           current_manager: 'Roberto Martinez',
         });
       // Ensure the results returned is correct
@@ -153,11 +160,28 @@ describe('All team management', () => {
           motto: 'Toffee Blues',
           major_trophies: '12',
           location: 'Wigan',
+          stadium: 'Madison Park',
           year_founded: '1826',
         });
       // Ensure the results returned is correct
       expect(response.statusCode).toBe(400);
       expect(response.body.error).toBe('current_manager is required');
+    });
+    test('It throws an error because of missing stadium', async () => {
+      const response = await request(app)
+        .post('/api/v1/teams/add')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          team_name: 'Wigan Athletic',
+          motto: 'Toffee Blues',
+          major_trophies: '12',
+          location: 'Wigan',
+          year_founded: '1826',
+          current_manager: 'Roberto Martinez',
+        });
+      // Ensure the results returned is correct
+      expect(response.statusCode).toBe(400);
+      expect(response.body.error).toBe('stadium is required');
     });
 
     test('It throws a 401 because of admin privileges', async () => {
@@ -169,6 +193,7 @@ describe('All team management', () => {
           motto: 'Toffee Blues',
           major_trophies: '12',
           location: 'Wigan',
+          stadium: 'Madison Park',
           year_founded: '1826',
           current_manager: 'Roberto Martinez',
         });
@@ -233,7 +258,7 @@ describe('All team management', () => {
     });
     test('It responds with a particular team', async () => {
       const response = await request(app)
-        .get('/api/v1/teams/2')
+        .get('/api/v1/teams/2');
       // Ensure the results returned is correct
       expect(response.statusCode).toBe(200);
       expect(typeof response.body.data).toBe('object');
@@ -266,6 +291,7 @@ describe('All team management', () => {
           motto: 'Toffee Blues',
           major_trophies: '12',
           location: 'Wigan',
+          stadium: 'Madison Park',
           year_founded: '1826',
           current_manager: 'Roberto Martinez',
         });
@@ -290,6 +316,7 @@ describe('All team management', () => {
           major_trophies: '12',
           location: 'Wigan',
           year_founded: '1826',
+          stadium: 'Madison Park',
           current_manager: 'Roberto Martinez',
         });
       // Ensure the results returned is correct
@@ -306,6 +333,7 @@ describe('All team management', () => {
           major_trophies: '12',
           location: 'Wigan',
           year_founded: '1826',
+          stadium: 'Madison Park',
           current_manager: 'Roberto Martinez',
         });
       // Ensure the results returned is correct
