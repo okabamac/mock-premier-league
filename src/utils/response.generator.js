@@ -17,11 +17,11 @@ class ResponseGenerator {
    * @param {object} data
    * @param{string} message
    */
-  sendSuccess(res, statusCode, data) {
+  sendSuccess(res, statusCode, data, message) {
     this.status = statusCode;
     this.data = data;
     this.type = 'success';
-
+    this.message = message;
     return this.send(res);
   }
 
@@ -47,6 +47,7 @@ class ResponseGenerator {
   send(res) {
     const filteredResponse = General.stripNull({
       status: this.status,
+      message: this.message,
       data: this.data,
     });
 
