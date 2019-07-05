@@ -21,6 +21,7 @@ class TeamService {
         major_trophies,
         location,
         year_founded,
+        stadium,
         current_manager,
       } = req.body;
       const newTeam = {
@@ -28,6 +29,7 @@ class TeamService {
         team_name,
         location,
         year_founded,
+        stadium,
         current_manager,
         major_trophies,
         motto,
@@ -38,6 +40,7 @@ class TeamService {
         team_name,
         location,
         year_founded,
+        stadium,
         current_manager,
         major_trophies,
         motto,
@@ -76,6 +79,7 @@ class TeamService {
         motto,
         major_trophies,
         location,
+        stadium,
         year_founded,
         current_manager,
       } = req.body;
@@ -84,6 +88,7 @@ class TeamService {
         motto: motto || foundTeam.motto,
         major_trophies: major_trophies || foundTeam.major_trophies,
         location: location || foundTeam.location,
+        stadium: stadium || foundTeam.stadium,
         year_founded: year_founded || foundTeam.year_founded,
         current_manager: current_manager || foundTeam.current_manager,
       }); // this mutates
