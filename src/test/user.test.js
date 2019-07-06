@@ -1,21 +1,49 @@
 import request from 'supertest';
+import app from '../../app';
 
-import app from '../server/app';
+import User from '../models/users.model';
+import TestDbHelper from '../../testDB';
 
+const dbHelper = new TestDbHelper();
 let adminToken;
-// Imported our node application
+let userToken;
 
-beforeAll(async (done) => {
+/**
+ * Insert set of sample products into the database
+ */
+async function createSampleUsers() {
+  const user1 = await new User({
+    first_name: 'Mac',
+    last_name: 'Okaba',
+    email: 'markokaba99@gmail.com',
+    password: '$2a$10$17MpQeJWeiXDlMhae/UvkO8I04nB4XOX24FnH0qN9i3VO8r9WFHni',
+    is_admin: true,
+  }).save();
+  const user2 = await new User({
+    first_name: 'John',
+    last_name: 'James',
+    email: 'jj06@gmail.com',
+    password: '$2a$10$17MpQeJWeiXDlMhae/UvkO8I04nB4XOX24FnH0qN9i3VO8r9WFHni',
+    is_admin: false,
+  }).save();
+  return { user1, user2 };
+}
+
+beforeAll(async () => {
+  await dbHelper.start();
+  const { user1 } = await createSampleUsers();
   const response = await request(app)
     .post('/api/v1/users/signin')
     .send({
-      email: 'markokaba99@gmail.com',
+      email: user1.email,
       password: 'johnbaby',
     });
   adminToken = response.body.data.token; // save the token!
-  done();
 });
 
+afterAll(async () => {
+  await dbHelper.stop();
+});
 
 describe('All user /user', () => {
   describe('POST /regular user', () => {
@@ -28,12 +56,10 @@ describe('All user /user', () => {
           email: 'nicolekidman@gmail.com',
           password: 'tomcruise',
           confirm_password: 'tomcruise',
-
         });
-
       // Ensure the results returned is correct
       expect(response.statusCode).toBe(200);
-      expect(response.body.data).toHaveProperty('user_id');
+      expect(response.body.data).toHaveProperty('id');
       expect(response.body.data).toHaveProperty('first_name');
       expect(response.body.data).toHaveProperty('last_name');
       expect(response.body.data).toHaveProperty('email');
@@ -49,12 +75,36 @@ describe('All user /user', () => {
 
       // Ensure the results returned is correct
       expect(response.statusCode).toBe(200);
-      expect(response.body.data).toHaveProperty('user_id');
+      expect(response.body.data).toHaveProperty('id');
       expect(response.body.data).toHaveProperty('first_name');
       expect(response.body.data).toHaveProperty('last_name');
       expect(response.body.data).toHaveProperty('email');
       expect(response.body.data).toHaveProperty('is_admin');
       expect(response.body.data).toHaveProperty('token');
+    });
+    test('It throws an error for unregistered or missing credentials', async () => {
+      const response = await request(app)
+        .post('/api/v1/users/signin')
+        .send({
+          email: 'nicoleman@gmail.com',
+          password: 'tomcruise',
+        });
+
+      // Ensure the results returned is correct
+      expect(response.statusCode).toBe(400);
+      expect(response.body.error).toBe('Invalid credentials');
+    });
+    test('It throws an error for unregistered or missing credentials', async () => {
+      const response = await request(app)
+        .post('/api/v1/users/signin')
+        .send({
+          email: 'nicolekidman@gmail.com',
+          password: 'tomcruises23',
+        });
+
+      // Ensure the results returned is correct
+      expect(response.statusCode).toBe(400);
+      expect(response.body.error).toBe('Invalid credentials');
     });
 
     test('It throws an error because of missing first name', async () => {
@@ -158,7 +208,7 @@ describe('All user /user', () => {
         });
       // Ensure the results returned is correct
       expect(response.statusCode).toBe(200);
-      expect(response.body.data).toHaveProperty('user_id');
+      expect(response.body.data).toHaveProperty('id');
       expect(response.body.data).toHaveProperty('first_name');
       expect(response.body.data).toHaveProperty('last_name');
       expect(response.body.data).toHaveProperty('email');

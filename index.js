@@ -2,7 +2,7 @@ import http from 'http';
 
 import app from './app';
 
-import keys from '../utils/config';
+import keys from './src/utils/config';
 
 const { port } = keys;
 

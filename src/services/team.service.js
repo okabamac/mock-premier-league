@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import Team from '../models/team.model';
+import Team from '../models/teams.model';
 
 class TeamService {
   /** Add team to the db
@@ -9,9 +9,7 @@ class TeamService {
 
   static async addTeam(req) {
     try {
-      const foundTeam = await Team.filter(
-        team => team.team_name === req.body.team_name,
-      )[0];
+      const foundTeam = await Team.findOne({ team_name: req.body.team_name });
       if (foundTeam) {
         throw new Error('Team name is already registered');
       }
@@ -24,8 +22,7 @@ class TeamService {
         stadium,
         current_manager,
       } = req.body;
-      const newTeam = {
-        team_id: Team.length + 1,
+      const newTeam = new Team({
         team_name,
         location,
         year_founded,
@@ -33,10 +30,10 @@ class TeamService {
         current_manager,
         major_trophies,
         motto,
-      };
-      await Team.push(newTeam);
+      });
+      await newTeam.save();
       return {
-        team_id: newTeam.team_id,
+        id: newTeam.id,
         team_name,
         location,
         year_founded,
@@ -52,14 +49,11 @@ class TeamService {
 
   static async removeTeam(req) {
     try {
-      const foundTeam = await Team.filter(
-        team => team.team_id === Number(req.params.team_id),
-      )[0];
+      // remove team
+      const foundTeam = await Team.findOneAndDelete({ _id: req.params.team_id });
       if (!foundTeam) {
         throw new Error('This team does not exist');
       }
-      // remove team
-      await Team.splice(Team.indexOf(foundTeam), 1);
       return foundTeam;
     } catch (err) {
       throw err;
@@ -68,31 +62,15 @@ class TeamService {
 
   static async editTeam(req) {
     try {
-      const foundTeam = await Team.filter(
-        team => team.team_id === Number(req.params.team_id),
-      )[0];
-      if (!foundTeam) {
+      const result = await Team.findOneAndUpdate(
+        { _id: req.params.team_id },
+        { $set: req.body },
+        { new: true },
+      );
+      if (!result) {
         throw new Error('This team does not exist');
       }
-      const {
-        team_name,
-        motto,
-        major_trophies,
-        location,
-        stadium,
-        year_founded,
-        current_manager,
-      } = req.body;
-      await Object.assign(foundTeam, {
-        team_name: team_name || foundTeam.team_name,
-        motto: motto || foundTeam.motto,
-        major_trophies: major_trophies || foundTeam.major_trophies,
-        location: location || foundTeam.location,
-        stadium: stadium || foundTeam.stadium,
-        year_founded: year_founded || foundTeam.year_founded,
-        current_manager: current_manager || foundTeam.current_manager,
-      }); // this mutates
-      return foundTeam;
+      return result;
     } catch (err) {
       throw err;
     }
@@ -100,9 +78,7 @@ class TeamService {
 
   static async getATeam(req) {
     try {
-      const foundTeam = await Team.filter(
-        team => team.team_id === Number(req.params.team_id),
-      )[0];
+      const foundTeam = await Team.findById({ _id: req.params.team_id });
       if (!foundTeam) {
         throw new Error('This team is not registered');
       }
@@ -114,10 +90,29 @@ class TeamService {
 
   static async getAllTeam(req) {
     try {
-      return Team;
+      if (req.query.team_name) {
+        const foundTeam = await Team.findOne({
+          team_name: req.query.team_name,
+        });
+        if (!foundTeam) {
+          throw new Error(`No ${req.query.status} fixtures`);
+        }
+        return foundTeam;
+      }
+      return Team.find();
     } catch (err) {
       throw err;
     }
+  }
+
+  static async getNextSequence(key, value) {
+    const ret = Team.counters.findAndModify({
+      query: { [key]: value },
+      update: { $inc: { seq: 1 } },
+      new: true,
+    });
+
+    return ret.seq;
   }
 }
 

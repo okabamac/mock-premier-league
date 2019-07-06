@@ -13,6 +13,7 @@
     "joi": "^14.3.1",
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.24.0",
+    "mongodb": "^3.2.7",
     "mongoose": "^5.6.3",
     "morgan": "^1.9.1",
     "redis": "^2.8.0"
@@ -27,6 +28,7 @@
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.18.0",
     "jest": "^24.8.0",
+    "mongodb-memory-server": "^5.1.5",
     "nodemon": "^1.19.1",
     "nyc": "^14.1.1",
     "supertest": "^4.0.2"
@@ -37,9 +39,9 @@
   },
   "scripts": {
     "lint": "eslint src/ --fix",
-    "start": "babel-node src/server/index.js",
-    "dev": "nodemon --exec babel-node src/server/index.js",
-    "test": "nyc --require @babel/register jest jest --config jestconfig.json src/test/**.test.js"
+    "start": "babel-node index.js",
+    "dev": "nodemon --exec babel-node index.js",
+    "test": "nyc --require @babel/register jest --config jest.config.json src/test/**.test.js --forceExit --detectOpenHandles --maxWorkers=10"
   },
   "repository": {
     "type": "git",

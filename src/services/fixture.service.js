@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import Fixture from '../models/fixture.model';
+import Fixture from '../models/fixtures.model';
 
 class FixtureService {
   /** Add fixture to the db
@@ -9,9 +9,9 @@ class FixtureService {
 
   static async addFixture(req) {
     try {
-      const foundFixture = await Fixture.filter(
-        fixture => fixture.team_A === req.body.team_A && fixture.team_B === req.body.team_B && fixture.date.getTime() === req.body.date.getTime(),
-      )[0];
+      const foundFixture = await Fixture.findOne(
+        { team_A: req.body.team_A, team_B: req.body.team_B, date: req.body.date },
+      );
       if (foundFixture) {
         throw new Error('There is already a scheduled fixture between the teams on that date');
       }
@@ -23,8 +23,7 @@ class FixtureService {
         time,
         status,
       } = req.body;
-      const newFixture = {
-        fixture_id: Fixture.length + 1,
+      const newFixture = new Fixture({
         team_A,
         team_B,
         venue,
@@ -32,10 +31,10 @@ class FixtureService {
         time,
         status,
         scores: '0-0',
-      };
-      await Fixture.push(newFixture);
+      });
+      await newFixture.save();
       return {
-        fixture_id: newFixture.fixture_id,
+        id: newFixture.id,
         team_A,
         team_B,
         venue,
@@ -50,14 +49,11 @@ class FixtureService {
 
   static async removeFixture(req) {
     try {
-      const foundFixture = await Fixture.filter(
-        fixture => fixture.fixture_id === Number(req.params.fixture_id),
-      )[0];
+      // remove fixture
+      const foundFixture = await Fixture.findOneAndDelete({ _id: req.params.fixture_id });
       if (!foundFixture) {
         throw new Error('This fixture does not exist');
       }
-      // remove fixture
-      await Fixture.splice(Fixture.indexOf(foundFixture), 1);
       return foundFixture;
     } catch (err) {
       throw err;
@@ -66,31 +62,15 @@ class FixtureService {
 
   static async editFixture(req) {
     try {
-      const foundFixture = await Fixture.filter(
-        fixture => fixture.fixture_id === Number(req.params.fixture_id),
-      )[0];
-      if (!foundFixture) {
+      const result = await Fixture.findOneAndUpdate(
+        { _id: req.params.fixture_id },
+        { $set: req.body },
+        { new: true },
+      );
+      if (!result) {
         throw new Error('This fixture does not exist');
       }
-      const {
-        team_A,
-        team_B,
-        venue,
-        date,
-        time,
-        status,
-        scores,
-      } = req.body;
-      await Object.assign(foundFixture, {
-        team_A: team_A || foundFixture.team_A,
-        team_B: team_B || foundFixture.team_B,
-        venue: venue || foundFixture.venue,
-        date: date || foundFixture.date,
-        time: time || foundFixture.time,
-        status: status || foundFixture.status,
-        scores: scores || foundFixture.scores,
-      }); // this mutates
-      return foundFixture;
+      return result;
     } catch (err) {
       throw err;
     }
@@ -98,9 +78,9 @@ class FixtureService {
 
   static async getAFixture(req) {
     try {
-      const foundFixture = await Fixture.filter(
-        fixture => fixture.fixture_id === Number(req.params.fixture_id),
-      )[0];
+      const foundFixture = await Fixture.findById(
+        { _id: req.params.fixture_id },
+      );
       if (!foundFixture) {
         throw new Error('This fixture does not exist');
       }
@@ -113,15 +93,15 @@ class FixtureService {
   static async getAllFixture(req) {
     try {
       if (req.query.status) {
-        const foundFixture = await Fixture.filter(
-          fixture => fixture.status === req.query.status,
-        )[0];
+        const foundFixture = await Fixture.findOne(
+          { status: req.query.status },
+        );
         if (!foundFixture) {
           throw new Error(`No ${req.query.status} fixtures`);
         }
         return foundFixture;
       }
-      return Fixture;
+      return Fixture.find();
     } catch (err) {
       throw err;
     }

@@ -20,7 +20,7 @@ class Authentication {
     if (payload.status && payload.status !== 200) {
       return response.sendError(res, payload.status, payload.message);
     }
-    req.user_id = payload.user_id;
+    req.id = payload.id;
     req.is_admin = payload.is_admin;
     return next();
   }
@@ -38,7 +38,7 @@ class Authentication {
 
   static signJwt(user) {
     const payload = {
-      user_id: user.user_id,
+      id: user.id,
       is_admin: user.is_admin,
       iat: moment().unix(),
       exp: moment()
