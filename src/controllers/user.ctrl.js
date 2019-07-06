@@ -25,7 +25,7 @@ class UserController {
 
   static async login(req, res) {
     try {
-      const user = await UserService.login(req.body);
+      const user = await UserService.login(req);
       if (user) {
         return response.sendSuccess(res, 200, user);
       }

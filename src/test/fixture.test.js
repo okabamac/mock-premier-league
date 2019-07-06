@@ -1,12 +1,76 @@
+/* eslint-disable camelcase */
 import request from 'supertest';
+import app from '../../app';
 
-import app from '../server/app';
+import User from '../models/users.model';
+import Fixture from '../models/fixtures.model';
+import TestDbHelper from '../../testDB';
 
+const dbHelper = new TestDbHelper();
 let adminToken;
 let userToken;
-// Imported our node application
+let fixture_id1;
+let fixture_id2;
+let fixture_id3;
 
-beforeAll(async (done) => {
+/**
+ * Insert set of sample products into the database
+ */
+async function createSamples() {
+  const user1 = await new User({
+    first_name: 'Mac',
+    last_name: 'Okaba',
+    email: 'markokaba99@gmail.com',
+    password: '$2a$10$17MpQeJWeiXDlMhae/UvkO8I04nB4XOX24FnH0qN9i3VO8r9WFHni',
+    is_admin: true,
+  }).save();
+  const user2 = await new User({
+    first_name: 'John',
+    last_name: 'James',
+    email: 'jj06@gmail.com',
+    password: '$2a$10$17MpQeJWeiXDlMhae/UvkO8I04nB4XOX24FnH0qN9i3VO8r9WFHni',
+    is_admin: false,
+  }).save();
+  const fixture1 = await new Fixture({
+    team_A: 'Liverpool',
+    team_B: 'Arsenal',
+    venue: 'Anfield',
+    date: new Date('2018-08-09'),
+    time: '3pm',
+    status: 'pending',
+    scores: '0-0',
+  }).save();
+  const fixture2 = await new Fixture({
+    team_A: 'Manchester United',
+    team_B: 'Chelsea',
+    venue: 'Old Trafford',
+    date: new Date('2018-06-09'),
+    time: '3pm',
+    status: 'completed',
+    scores: '2-1',
+  }).save();
+  const fixture3 = await new Fixture({
+    team_A: 'Leicester City',
+    team_B: 'Wigan Athletic',
+    venue: 'King Power Stadium',
+    date: new Date('2018-08-09'),
+    time: '3pm',
+    status: 'pending',
+    scores: '0-0',
+  }).save();
+  return {
+    user1, user2, fixture1, fixture2, fixture3,
+  };
+}
+
+beforeAll(async () => {
+  await dbHelper.start();
+  const {
+    user1, user2, fixture1, fixture2, fixture3,
+  } = await createSamples();
+  fixture_id1 = fixture1.id;
+  fixture_id2 = fixture2.id;
+  fixture_id3 = fixture3.id;
   const adminTokenResponse = await request(app)
     .post('/api/v1/users/signin')
     .send({
@@ -21,7 +85,10 @@ beforeAll(async (done) => {
       password: 'johnbaby',
     });
   userToken = userTokenResponse.body.data.token; // save the token!
-  done();
+});
+
+afterAll(async () => {
+  await dbHelper.stop();
 });
 
 describe('All fixture management', () => {
@@ -40,7 +107,7 @@ describe('All fixture management', () => {
         });
       // Ensure the results returned is correct
       expect(response.statusCode).toBe(200);
-      expect(response.body.data).toHaveProperty('fixture_id');
+      expect(response.body.data).toHaveProperty('id');
       expect(response.body.data).toHaveProperty('team_A');
       expect(response.body.data).toHaveProperty('team_B');
       expect(response.body.data).toHaveProperty('date');
@@ -212,12 +279,12 @@ describe('All fixture management', () => {
   describe('Delete fixture', () => {
     test('It responds with the deleted fixture', async () => {
       const response = await request(app)
-        .delete('/api/v1/fixtures/1')
+        .delete(`/api/v1/fixtures/${fixture_id1}`)
         .set('Authorization', `Bearer ${adminToken}`);
       // Ensure the results returned is correct
       expect(response.statusCode).toBe(200);
       expect(response.body.message).toBe('Fixture successfully deleted');
-      expect(response.body.data).toHaveProperty('fixture_id');
+      expect(response.body.data).toHaveProperty('_id');
       expect(response.body.data).toHaveProperty('team_A');
       expect(response.body.data).toHaveProperty('team_B');
       expect(response.body.data).toHaveProperty('date');
@@ -225,22 +292,21 @@ describe('All fixture management', () => {
       expect(response.body.data).toHaveProperty('venue');
       expect(response.body.data).toHaveProperty('scores');
     });
-
-    test('It throws error because fixture is deleted', async () => {
+    test('It throws a 404 error', async () => {
       const response = await request(app)
-        .delete('/api/v1/fixtures/1')
+        .delete(`/api/v1/fixtures/${fixture_id1}`)
         .set('Authorization', `Bearer ${adminToken}`);
       // Ensure the results returned is correct
       expect(response.statusCode).toBe(404);
       expect(response.body.error).toBe('This fixture does not exist');
     });
+
     test('It throws error because of bad ID', async () => {
       const response = await request(app)
-        .delete('/api/v1/fixtures/jesus')
+        .delete('/api/v1/fixtures/jesus.#@@(')
         .set('Authorization', `Bearer ${adminToken}`);
       // Ensure the results returned is correct
       expect(response.statusCode).toBe(400);
-      expect(response.body.error).toBe('fixture_id must be an integer');
     });
     test('It throws error because of admin privileges', async () => {
       const response = await request(app)
@@ -278,45 +344,46 @@ describe('All fixture management', () => {
       expect(response.body.error).toBe('No completion fixtures');
     });
     test('It responds with a particular fixture', async () => {
-      const response = await request(app).get('/api/v1/fixtures/2');
+      const response = await request(app)
+        .get(`/api/v1/fixtures/${fixture_id2}`);
       // Ensure the results returned is correct
       expect(response.statusCode).toBe(200);
       expect(typeof response.body.data).toBe('object');
     });
     test('It throws error because of invalid id', async () => {
       const response = await request(app)
-        .get('/api/v1/fixtures/jesus')
+        .get('/api/v1/fixtures/1234sf')
         .set('Authorization', `Bearer ${adminToken}`);
       // Ensure the results returned is correct
       expect(response.statusCode).toBe(400);
-      expect(response.body.error).toBe('fixture_id must be an integer');
+      expect(response.body.error).toBe('fixture_id is not valid');
     });
     test('It throws error because of invalid id', async () => {
       const response = await request(app)
-        .get('/api/v1/fixtures/jesus')
+        .get('/api/v1/fixtures/jesus.**(((*&&^%$')
         .set('Authorization', `Bearer ${userToken}`);
       // Ensure the results returned is correct
       expect(response.statusCode).toBe(400);
-      expect(response.body.error).toBe('fixture_id must be an integer');
+      expect(response.body.error).toBe('Failed to decode param: /api/v1/fixtures/jesus.**(((*&&%5E%$');
     });
   });
 
   describe('Edit fixtures', () => {
     test('It responds with the edited fixtures', async () => {
       const response = await request(app)
-        .put('/api/v1/fixtures/edit/2')
+        .put(`/api/v1/fixtures/edit/${fixture_id2}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           team_A: 'Wigan Athletic',
           team_B: 'Birmingham Athletic',
-          date: '12-06-2019',
+          date: '2018-12-30',
           time: '4pm',
           venue: 'Wigan Park',
         });
       // Ensure the results returned is correct
       expect(response.statusCode).toBe(200);
       expect(response.body.message).toBe('Fixture successfully edited');
-      expect(response.body.data).toHaveProperty('fixture_id');
+      expect(response.body.data).toHaveProperty('_id');
       expect(response.body.data).toHaveProperty('team_A');
       expect(response.body.data).toHaveProperty('team_B');
       expect(response.body.data).toHaveProperty('date');
@@ -341,7 +408,7 @@ describe('All fixture management', () => {
     });
     test('It throws error because of fixture not found', async () => {
       const response = await request(app)
-        .put('/api/v1/fixtures/edit/350000666666')
+        .put('/api/v1/fixtures/edit/5bf142459b72e12b2b1b2cd')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           team_A: 'Wigan Athletic',
@@ -352,7 +419,7 @@ describe('All fixture management', () => {
         });
       // Ensure the results returned is correct
       expect(response.statusCode).toBe(400);
-      expect(response.body.error).toBe('This fixture does not exist');
+      expect(response.body.error).toBe('fixture_id is not valid');
     });
   });
 });
