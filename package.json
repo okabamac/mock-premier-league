@@ -41,7 +41,7 @@
     "lint": "eslint src/ --fix",
     "start": "babel-node index.js",
     "dev": "nodemon --exec babel-node index.js",
-    "test": "nyc --require @babel/register jest --config jest.config.json src/test/**.test.js --forceExit --detectOpenHandles --maxWorkers=10"
+    "test": "export NODE_ENV=test || set NODE_ENV=test&& nyc --require @babel/register jest --config jest.config.json src/test/**.test.js --forceExit --detectOpenHandles --maxWorkers=10"
   },
   "repository": {
     "type": "git",
