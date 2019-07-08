@@ -14,7 +14,7 @@ cache:
     - "node_modules"
 
 services:
-  - postgresql
+  - mongodb
 
 install:
   - npm install
