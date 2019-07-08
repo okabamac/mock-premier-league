@@ -1,22 +1,14 @@
 import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
-import mongoose from 'mongoose';
 import userRoute from './src/routes/user.route';
 import teamRoute from './src/routes/team.route';
 import fixtureRoute from './src/routes/fixture.route';
-import keys from './src/utils/config';
+import connectionManager from './db.manager';
+
 
 const app = express();
 const API_VERSION = '/api/v1';
-
-// mongoose
-//   .connect(keys.mongoUri, {
-//     useNewUrlParser: true,
-//     useFindAndModify: false,
-//   })
-//   .then(() => console.log('MongoDB Connected...'))
-//   .catch(err => console.log(err));
 
 app.use(morgan('dev'));
 
@@ -31,6 +23,12 @@ app.use(
 app.use(`${API_VERSION}/users`, userRoute);
 app.use(`${API_VERSION}/teams`, teamRoute);
 app.use(`${API_VERSION}/fixtures`, fixtureRoute);
+
+if (process.env.NODE_ENV === 'test') {
+  connectionManager.stop();
+} else {
+  connectionManager.start();
+}
 
 app.use((err, req, res, next) => {
   if (err instanceof URIError) {
