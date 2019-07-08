@@ -5,11 +5,7 @@ describe('MongoDB Connections', () => {
     expect(process.env.NODE_ENV).toEqual('test');
   });
   test('Should fail when trying to start real mongo connection in test env ', async () => {
-    await connectionManager.start();
-    expect(process.env.NODE_ENV).toEqual('test');
-  });
-  test('Should fail when trying to stop real mongo connection in test env ', async () => {
-    await connectionManager.stop();
-    expect(process.env.NODE_ENV).toEqual('test');
+    const response = await connectionManager.start();
+    expect(response).toBe(undefined);
   });
 });
